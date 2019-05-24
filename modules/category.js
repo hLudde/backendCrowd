@@ -3,7 +3,9 @@ const joi = require('@hapi/joi');
 
 const schema = joi.object().keys({
     username: joi.string().alphanum().min(3).max(20).required(),
-    
+    MainID: joi.number(),
+    SubID: joi.number(),
+    SubSubID: joi.number()
 })
 
 function addInterest(username, values, callback){
