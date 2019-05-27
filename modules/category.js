@@ -9,21 +9,82 @@ const schema = joi.object().keys({
 })
 
 function addInterest(username, values, callback){
-    joi.validate({username: username}, schema, (err, res)=>{
+    joi.validate({username: username, MainID: values.mainID, SubID: values.subID, SubSubID: values.subSubID}, schema, (err, res)=>{
         if(err){
             console.error(err);
             callback({message:"Input error!", err:err})
             return;
         }
-        var sqlQuery = "SELECT UUID, Username, FirstName, LastName, PhoneNumber, Email, School, ProfileImage FROM crowd.Member WHERE Username='"+username+"';";
-        db.query(sqlQuery,(err, res, fields)=>{
+        if(values.mainID!=undefined){
+            addMainInterest(username, values.mainID, callback);
+            return;
+        }
+        if(values.subID!=undefined){
+            addSubInterest(username, values.subID, callback);
+            return;
+        }
+        if(values.subSubID!=undefined){
+            addSubSubInterest(username, values.subSubID, callback);
+            return;
+        }
+        callback({message: "no interest provided"}, false);
+        return;
+    });
+}
+
+function addMainInterest(username, id, callback){
+    var sqlQuery = "SELECT uuid FROM crowd.Member WHERE Username='"+username+"';";
+    getUUID(username, (err, res)=>{
+        if(err){
+            console.error(err);
+            callback({message: "Database error!", err:err},false);
+            return;
+        }
+        console.log(res);
+        var interestQuery = "INSERT INTO crowd.Member_Interests (MemberUUID, MainCategoryID) VALUES('"+res.uuid+"', '"+id+"')";
+        db.query(interestQuery,(err, res, fields)=>{
             if(err){
                 console.error(err);
                 callback({message: "Database error!", err:err},false);
                 return;
             }
-            callback(null, {username: res[0].Username, firstname: res[0].FirstName, lastname: res[0].LastName, phonenumber: res[0].PhoneNumber, email: res[0].Email, school: res[0].School, profileimage: res[0].ProfileImage});
-        });
+            callback(null, true);
+            return;
+        })
+    })
+}
+function addSubInterest(username, id, callback){
+    var sqlQuery = "SELECT uuid FROM crowd.Member WHERE Username='"+username+"';";
+    getUUID(username, (err, res)=>{
+        if(err){
+            console.error(err);
+            callback({message: "Database error!", err:err},false);
+            return;
+        }
+        console.log(res);
+        var interestQuery = "INSERT INTO crowd.Member_Interests (MemberUUID, MainCategoryID) VALUES('"+res.uuid+"', '"+id+"')";
+        db.query(interestQuery,(err, res, fields)=>{
+            if(err){
+                console.error(err);
+                callback({message: "Database error!", err:err},false);
+                return;
+            }
+            callback(null, true);
+            return;
+        })
+    })
+}
+
+function getUUID(username, callback){
+    var sqlQuery = "SELECT UUID FROM crowd.Member WHERE Username='"+username+"';";
+    db.query(sqlQuery,(err, res, fields)=>{
+        if(err){
+            console.error(err);
+            callback({message: "Database error!", err:err},false);
+            return;
+        }
+        callback(null, {uuid: res[0].UUID});
     });
 }
-module.exports.profile = profile;
+
+module.exports.addInterest = addInterest;
