@@ -57,3 +57,13 @@ app.get('/user/profile', function(req, res){
         return;
     })
 })
+app.get('/user/interest', function(req, res){
+    interest.getRandomCategory(req.body.username, (err, result)=>{
+        if(err){
+            res.send(err.message);
+            return;
+        }
+        res.json(result);
+        return;
+    })
+})
