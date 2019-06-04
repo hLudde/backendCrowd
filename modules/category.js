@@ -53,6 +53,7 @@ function addMainInterest(username, id, callback){
         })
     })
 }
+
 function addSubInterest(username, subID, callback){
     var sqlQuery = "SELECT uuid FROM crowd.Member WHERE Username='"+username+"';";
     getUUID(username, (err, res)=>{
@@ -125,7 +126,7 @@ function getRandomCategory(username, callback){
             callback({message: "Database error!", err:err0},false);
             return;
         }
-        console.log("got uuid");
+        console.log("got uuid "+res.uuid);
         var sumOfMainCategories = 'SELECT ID FROM crowd.Main_Category'
         db.query(sumOfMainCategories, (err1, res1, fields)=>{
             if(err1){
@@ -143,56 +144,95 @@ function getRandomCategory(username, callback){
                 }
                 console.log("got id's of sub")
                 var sumOfSubSubCategories = 'SELECT ID FROM crowd.Sub_Sub_Category'
-                db.query(sumOfSubCategories, (err3, res3, fields)=>{
+                db.query(sumOfSubSubCategories, (err3, res3, fields)=>{
                     if(err3){
                         console.error(err3);
                         callback({message: "Database error!", err:err3},false);
                         return;
                     }
                     console.log("got id's of subsub")
-                    var id = Math.floor(Math.random()*(res1.length+res2.length+res3.length))+1;
-                    console.log(id);
-                    if(id<=res1.length){
-                        var Category = "SELECT * FROM crowd.Main_Category WHERE ID = '"+id+"'";
-                        db.query(mainCategory, (err4, res4, fields)=>{
-                            if(err4){
-                                console.error(err4);
-                                callback({message: "Database error!", err:err4},false);
-                                return;
-                            }
-                            console.log("selected a main")
-                            callback(null, res4[0])
+                    var searchAgain = true;
+                    while(searchAgain){
+                        searchAgain = false;
+                        var id = Math.floor(Math.random()*(res1.length+res2.length+res3.length))+1;
+                        console.log(id);
+                        if(id<=res1.length){
+                            var Category = "SELECT * FROM crowd.Main_Category WHERE ID = '"+id+"'";
+                            db.query(Category, (err4, res4, fields)=>{
+                                if(err4){
+                                    console.error(err4);
+                                    callback({message: "Database error!", err:err4},false);
+                                    return;
+                                }
+                                var isAlreadyInterested = "SELECT * FROM crowd.Member_Interests WHERE MemberUUID = '"+res.uuid+"' AND MainCategoryID ='"+id+"'";
+                                db.query(isAlreadyInterested, (err5, res5, fields)=>{
+                                    console.log("hello world!")
+                                    if(err5){
+                                        console.error(err5);
+                                        callback({message: "Database error!", err:err5},false);
+                                        return;
+                                    }
+                                    console.log("the length of res5: "+res5.length);
+                                    if(res5.length<=0){
+                                        console.log("selected a main")
+                                        callback(null, res4[0])
+                                        return;
+                                    }
+                                    searchAgain = true;
+                                })
+                            })
+                        }else if(id<=(res1.length+res2.length)){
+                            id -= res1.length;
+                            var Category = "SELECT * FROM crowd.Sub_Category WHERE ID = '"+id+"'";
+                            db.query(Category, (err4, res4, fields)=>{
+                                if(err4){
+                                    console.error(err4);
+                                    callback({message: "Database error!", err:err4},false);
+                                    return;
+                                }
+                                var isAlreadyInterested = "SELECT * FROM crowd.Member_Interests WHERE MemberUUID = '"+res.uuid+"' AND SubCategoryID ='"+id+"'";
+                                db.query(isAlreadyInterested, (err5, res5, fields)=>{
+                                    if(err5){
+                                        console.error(err5);
+                                        callback({message: "Database error!", err:err5},false);
+                                        return;
+                                    }
+                                    if(res5.length<=0){
+                                        console.log("selected a sub")
+                                        callback(null, res4[0])
+                                        return;
+                                    }
+                                    searchAgain = true;
+                                })
+                            })
+                        }else if(id<=(res1.length+res2.length+res3.length)){
+                            id = id-(res1.length+res2.length);
+                            var Category = "SELECT * FROM crowd.Sub_Sub_Category WHERE ID = '"+id+"'";
+                            db.query(Category, (err4, res4, fields)=>{
+                                if(err4){
+                                    console.error(err4);
+                                    callback({message: "Database error!", err:err4},false);
+                                    return;
+                                }
+                                var isAlreadyInterested = "SELECT * FROM crowd.Member_Interests WHERE MemberUUID = '"+res.uuid+"' AND SubSubCategoryID ='"+id+"'";
+                                db.query(isAlreadyInterested, (err5, res5, fields)=>{
+                                    if(err5){
+                                        console.error(err5);
+                                        callback({message: "Database error!", err:err5},false);
+                                        return;
+                                    }
+                                    if(res5.length<=0){
+                                        console.log("selected a subsub")
+                                        callback(null, res4[0])
+                                        return;
+                                    }
+                                    searchAgain = true;
+                                })
+                            })
+                        }else{
+                            callback({message: "Database error!", err:"id doesnt exist"},false);
                             return;
-                        })
-                    }else if(id<=(res1.length+res2.length)){
-                        id -= res1.length;
-                        var Category = "SELECT * FROM crowd.Sub_Category WHERE ID = '"+id+"'";
-                        db.query(Category, (err4, res4, fields)=>{
-                            if(err4){
-                                console.error(err4);
-                                callback({message: "Database error!", err:err4},false);
-                                return;
-                            }
-                            console.log("selected a sub")
-                            callback(null, res4[0])
-                            return;
-                        })
-                    }else if(id<=(res1.length+res2.length+res3.length)){
-                        id = id-(res1.length+res2.length);
-                        var Category = "SELECT * FROM crowd.Sub_Sub_Category WHERE ID = '"+id+"'";
-                        db.query(Category, (err4, res4, fields)=>{
-                            if(err4){
-                                console.error(err4);
-                                callback({message: "Database error!", err:err4},false);
-                                return;
-                            }
-                            console.log("selected a subsub"+res4[0])
-                            callback(null, res4[0])
-                            return;
-                        })
-                    }else{
-                        callback({message: "Database error!", err:"id doesnt exist"},false);
-                        return;
+                        }
                     }
                 })
             })
