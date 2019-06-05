@@ -24,7 +24,7 @@ function RegisterAccount(username, name, email, password, callback){
                 callback({message: "Error hashing password!", err:err}, false);
                 return;
             }
-            var sqlQuery = "INSERT INTO crowd.Member (Username, FirstName, LastName, Email, Password) VALUES('"+username+"','"+name+"','"+name+"','"+email+"','"+hash+"')"
+            var sqlQuery = "INSERT INTO crowd.Member (Username, Name, Email, Password) VALUES('"+username+"','"+name+"','"+email+"','"+hash+"')"
             db.query(sqlQuery,(err)=>{
                 if(err){
                     console.error(err);

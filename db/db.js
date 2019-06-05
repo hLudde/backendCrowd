@@ -22,6 +22,7 @@ con.ping({},(err)=>{
         return;
     }
     console.log("The Crowd API is connected to DB!");
+    require('../modules/group').createGroup(0,1);
 })
 
 module.exports.mysql = con
