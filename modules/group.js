@@ -2,6 +2,32 @@ const db = require('../db/db').mysql;
 const joi = require('@hapi/joi');
 require('dotenv').config();
 
+function getUUID(username, callback){
+    var sqlQuery = "SELECT UUID FROM crowd.Member WHERE Username='"+username+"';";
+    db.query(sqlQuery,(err, res, fields)=>{
+        if(err){
+            console.error(err);
+            callback({message: "Database error!", err:err},false);
+            return;
+        }
+        callback(null, {uuid: res[0].UUID});
+    });
+}
+
+module.exports.getGroups = (username, callback) =>{
+    getUUID(username, (err, res)=>{
+        var query = "SELECT * FROM crowd.Groups WHERE UUID = (SELECT GroupUUID FROM crowd.Group_Member WHERE MemberUUID = '"+res.uuid+"')";
+        db.query(query, (err, res, fields)=>{
+            if(err){
+                console.log(err);
+                callback(err, {sucess:false});
+                return;
+            }
+            callback(null, res);
+        })
+    })
+}
+
 module.exports.createGroup = (categoryType, id)=>{
     if(Math.floor(Math.random()*101)>50){
         if(categoryType==0){

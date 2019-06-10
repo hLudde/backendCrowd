@@ -5,6 +5,8 @@ var chat = require("../modules/chat.js");
 var profile = require("../modules/profile.js");
 var edit = require("../modules/edit.js");
 var interest = require("../modules/category.js")
+var group = require("../modules/group.js");
+
 
 app.post("/register",(req,res)=>{
     signup.RegisterAccount(req.body.username, req.body.name, req.body.email, req.body.password, (err, success)=>{
@@ -47,6 +49,16 @@ app.get("/echo",(req,res)=>{
     res.send("Hello World!");
 })
 
+app.post("/user/groups",(req,res)=>{
+    group.getGroups(req.body.username, (err, result)=>{
+        if(err){
+            res.json(err)
+            return;
+        }
+        res.send(result);
+    })
+})
+
 app.get('/user/profile', function(req, res){
     profile.profile(req.body.username, (err, result)=>{
         if(err){
@@ -57,7 +69,7 @@ app.get('/user/profile', function(req, res){
         return;
     })
 })
-app.get('/user/interest', function(req, res){
+app.post('/user/randominterest', function(req, res){
     interest.getRandomCategory(req.body.username, (err, result)=>{
         if(err){
             res.send(err.message);

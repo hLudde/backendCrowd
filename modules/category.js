@@ -1,5 +1,6 @@
 const db = require('../db/db').mysql;
 const joi = require('@hapi/joi');
+const group = require('./group');
 
 const schema = joi.object().keys({
     username: joi.string().alphanum().min(3).max(20).required(),
@@ -17,14 +18,17 @@ function addInterest(username, values, callback){
         }
         if(values.mainID!=undefined){
             addMainInterest(username, values.mainID, callback);
+            group.createGroup(0, values.MainID);
             return;
         }
         if(values.subID!=undefined){
             addSubInterest(username, values.subID, callback);
+            group.createGroup(1, values.subID);
             return;
         }
         if(values.subSubID!=undefined){
             addSubSubInterest(username, values.subSubID, callback);
+            group.createGroup(2, values.subSubID);
             return;
         }
         callback({message: "no interest provided"}, false);
