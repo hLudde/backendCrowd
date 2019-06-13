@@ -1,7 +1,7 @@
 # requirements
 
-[https://git-scm.com/](git)
-[https://nodejs.org/en/](node)
+[git](https://git-scm.com/)
+[node](https://nodejs.org/en/)
 
 # How to run
 
