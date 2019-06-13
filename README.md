@@ -7,7 +7,7 @@
 
 first clone the repository into a folder on your local machine
 
-edit the create a .env file and set theese variables:
+edit or create a .env file and set theese variables:
 
 ```
 DB_PASS=<value>
